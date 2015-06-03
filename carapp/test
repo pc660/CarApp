@@ -1,0 +1,10 @@
+from prototype.models import *
+from prototype.serializers import *
+
+user = UserProfile()
+user.user = User(username="123", password="1",last_name="a",first_name="b")
+user.location = "CA"
+user.usertype = 1
+
+user_ser = UserSerializer(user)
+user_ser.serialize()
