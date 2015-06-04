@@ -1,10 +1,17 @@
 from django.http import *
 from django.shortcuts import render
 from django.conf.urls import url
+from django.contrib.auth.decorators import login_required 
+from django.contrib.auth import *
+from django.views.decorators.csrf import *
 from prototype.models import *
 from prototype.serializers import *
+from datetime import datetime
+import random
 import json
 from views import *
+
+TOKEN_LENGTH = 20
 
 class Response:
     """This class defines the return formats"""
@@ -38,9 +45,57 @@ def get_json_data(request):
         return request.GET["data"]
     else:
         return request.POST["data"]
-    
+
+def token_generator(length):
+    """Generate a token with random letters with length"""
+
+    token_list = \
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    s = []
+    for i in range(length):
+        s.append(random.choice(token_list))
+    return "".join(s) 
 
 # Create your views here.
+def login_require(request):
+    if request.method == "GET":
+        data = request.GET
+    else:
+        data = request.POST
+    user = authenticate(username=data["username"], password=data["password"])
+    if user and user.is_active:
+        ret = Response(SUCCESS, error_code[SUCCESS])
+    else:    
+        ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
+        return HttpResponse(ret.serialize())
+
+    # Generate a token for authentication
+    token = token_generator(30)
+    try:
+        user_token = Token.objects.get(username=data["username"])
+        user_token.token = token
+        user_token.start_time = datetime.now()
+    except:    
+        user_token = Token(token=token, username=data["username"])
+    user_token.save()
+    ret.set_ret("auth_token", token) 
+    return HttpResponse(ret.serialize())
+
+def authenticate_user(data):
+    """This function is used to check whether the current
+    user is authenticated or not"""
+    
+    try:
+        auth_token = data["auth_token"]
+        user_token = Token.objects.get(username=data["username"])
+        if user_token.token == auth_token:
+            return True
+    except:
+        return False
+    return False
+
+ 
+@csrf_exempt
 def get_user(request):
     """User api, receive a json object
     {
@@ -54,8 +109,8 @@ def get_user(request):
     data = get_json_data(request) 
     try:
         parsed_data = json.loads(data) 
-        user = UserProfile.objects.get(username=parsed_data["username"]) 
-        user_serializer = UserSerializer(user)
+        user = User.objects.get(username=parsed_data["username"])
+        user_serializer = UserSerializer(user.appuser)
         ret = Response(SUCCESS, error_code[SUCCESS])
         ret.set_ret("data", user_serializer.serialize())        
     except:
@@ -66,6 +121,7 @@ def get_user(request):
     ret.set_ret("data", user_serializer.serialize())  
     return HttpResponse(ret.serialize()) 
 
+@csrf_exempt
 def add_user(request): 
     """User api, receive a json object
     {
@@ -81,16 +137,16 @@ def add_user(request):
         parsed_data = json.loads(data) 
         user = User(
             username=parsed_data["username"],
-            password=parsed_data["password"],
             last_name=parsed_data["last_name"],
             first_name=parsed_data["first_name"],
             email=parsed_data["email"])
-        userprofile = UserProfile(
-            username=parsed_data["username"],
+        user.set_password(parsed_data["password"])
+        user.save()
+        appuser = AppUser.objects.create(
             user=user,
             usertype=parsed_data["usertype"],
             location=parsed_data["location"])
-        userprofile.save()
+        appuser.save()
     except KeyError as e:
         ret = Response(EMPTY_COLUMN, error_code[EMPEY_COLUMN]) 
         return HttpResponse(ret.serialize())
@@ -100,24 +156,32 @@ def add_user(request):
     ret = Response(SUCCESS, error_code[SUCCESS])
     return HttpResponse(ret.serialize()) 
 
+@csrf_exempt
 def edit_userprofile(request):
-    """edit an user profile"""
+    """edit an user profile.
+    This function needs to be authenticated"""
    
     data = get_json_data(request)
     try:
         parsed_data = json.loads(data) 
-        user = UserProfile.objects.get(username=json_data["username"]) 
-        user.location = parsed_data["location"]
-        user.usertype = parsed_data["usertype"]
-        user.user.last_name = parsed_data["last_name"]
-        user.user.first_name = parsed_data["first_name"]
-        user.user.email = parsed_data["email"]
-        user.save() 
+        # authentication
+        if not authenticate_user(parsed_data):
+            ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
+            return HttpResponse(ret.serialize())
+        user = User.objects.get(username=parsed_data["username"]) 
+        user.appuser.location = parsed_data["location"]
+        user.appuser.usertype = parsed_data["usertype"]
+        user.last_name = parsed_data["last_name"]
+        user.first_name = parsed_data["first_name"]
+        user.email = parsed_data["email"]
+        user.save()
+        user.appuser.save()
     except KeyError as e:
         ret = Response(EMPTY_COLUMN, error_code[EMPEY_COLUMN]) 
         return HttpResponse(ret.serialize())
-    except:
-        ret = Response(DUPLICATE_KEY, error_code[DUPLICATE_KEY])
+    except Exception as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+        ret.set_ret("error", str(e))
         return HttpResponse(ret.serialize())
     ret = Response(SUCCESS, error_code[SUCCESS])
     return HttpResponse(ret.serialize()) 
