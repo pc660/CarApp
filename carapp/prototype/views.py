@@ -27,12 +27,12 @@ class Response:
     def serialize(self):
         return json.dumps(self.ret)
 
-SUCCESS = 0
-UNKNOWN_OPERATION = 1
-AUTHENTICATION_FAIL = 2 
-DUPLICATE_KEY = 3
-EMPTY_COLUMN = 4
-NONEXIST_DATA = 5
+SUCCESS = "0"
+UNKNOWN_OPERATION = "1"
+AUTHENTICATION_FAIL = "2" 
+DUPLICATE_KEY = "3"
+EMPTY_COLUMN = "4"
+NONEXIST_DATA = "5"
 
 error_code = {
     SUCCESS: "Operation success",
