@@ -37,10 +37,10 @@ NONEXIST_DATA = 5
 error_code = {
     SUCCESS: "Operation success",
     UNKNOWN_OPERATION: "Unknown operation",
-    NONEXIST_DATA: "The requested record can not be found"
-    AUTHENTICATION_FAIL = "authenticate", 
-    DUPLICATE_KEY = "duplicate",
-    EMPTY_COLUMN = "empty"
+    NONEXIST_DATA: "The requested record can not be found",
+    AUTHENTICATION_FAIL: "authenticate", 
+    DUPLICATE_KEY: "duplicate",
+    EMPTY_COLUMN: "empty"
 }
 
 def get_json_data(request):
