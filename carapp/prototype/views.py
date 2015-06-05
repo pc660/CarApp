@@ -38,6 +38,9 @@ error_code = {
     SUCCESS: "Operation success",
     UNKNOWN_OPERATION: "Unknown operation",
     NONEXIST_DATA: "The requested record can not be found"
+    AUTHENTICATION_FAIL = "authenticate", 
+    DUPLICATE_KEY = "duplicate",
+    EMPTY_COLUMN = "empty"
 }
 
 def get_json_data(request):
@@ -57,6 +60,7 @@ def token_generator(length):
     return "".join(s) 
 
 # Create your views here.
+@csrf_exempt
 def login_require(request):
     if request.method == "GET":
         data = request.GET
