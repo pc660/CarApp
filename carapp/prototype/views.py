@@ -122,8 +122,6 @@ def get_user(request):
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA]) 
         ret.set_ret("data", parsed_data)  
         return HttpResponse(ret.serialize())
-    ret = Response(SUCCESS, error_code[SUCCESS])
-    ret.set_ret("data", user_serializer.serialize())  
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
@@ -152,18 +150,22 @@ def add_user(request):
             usertype=parsed_data["usertype"],
             location=parsed_data["location"])
         appuser.save()
+        # Generate response
+        ret = Response(SUCCESS, error_code[SUCCESS])
+        user_serializer = UserSerializer(appuser)
+        ret.set_ret("data", user_serializer.serialize())        
+        
+        # Generate a token for authentication
+        token = token_generator(30)
+        user_token = Token(token=token, username=user.username)
+        user_token.save()
+        ret.set_ret("auth_token", token)
     except KeyError as e:
         ret = Response(EMPTY_COLUMN, error_code[EMPEY_COLUMN]) 
         return HttpResponse(ret.serialize())
     except:
         ret = Response(DUPLICATE_KEY, error_code[DUPLICATE_KEY])
         return HttpResponse(ret.serialize())
-    ret = Response(SUCCESS, error_code[SUCCESS])
-    # Generate a token for authentication
-    token = token_generator(30)
-    user_token = Token(token=token, username=data["username"])
-    user_token.save()
-    ret.set_ret("auth_token", token) 
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
@@ -191,7 +193,6 @@ def edit_userprofile(request):
         return HttpResponse(ret.serialize())
     except Exception as e:
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
-        ret.set_ret("error", str(e))
         return HttpResponse(ret.serialize())
     ret = Response(SUCCESS, error_code[SUCCESS])
     return HttpResponse(ret.serialize()) 
