@@ -7,6 +7,7 @@ from django.views.decorators.csrf import *
 from prototype.models import *
 from prototype.serializers import *
 from datetime import datetime
+from django.db.models.base import ObjectDoesNotExist
 import random
 import json
 from views import *
@@ -190,3 +191,51 @@ def edit_userprofile(request):
     ret = Response(SUCCESS, error_code[SUCCESS])
     return HttpResponse(ret.serialize()) 
 
+@csrf_exempt
+def add_car(request):
+    """rest api to add car, login_required"""
+    
+    data = get_json_data(request)
+    try:
+        if not authenticate_user(parsed_data):
+            ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
+            return HttpResponse(ret.serialize())
+        user = User.objects.get(username=parsed_data["username"])
+        car = Car(uuser=user, 
+            used=parsed_data["used"],
+            model=parsed_data["model"],
+            brand=parsed_data["brand"],
+            location=parsed_data["location"],
+            year=parsed_data["year"],
+            price=parsed_data["price"],
+            color=parsed_data["color"],
+            title=parsed_data["title"],
+            miles=parsed_data["miles"],
+            description=parsed_data["description"] 
+        )
+        car.save()
+        car_serializer = CarSerializer(car)
+        ret = Response(SUCCESS, error_code[SUCCESS])
+        ret.set_ret("data", car_serializer.serialize())
+    except KeyError as e:
+        ret = Response(EMPTY_COLUMN, error_code[EMPTY_COLUMN])
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+    return HttpResponse(ret.serialize())
+
+@csrf_exempt
+def delete_car(request):
+   
+    data = get_json_data(request)
+    try:
+        parsed_data = json.loads(data)
+        car = Car.objects.get(car_id=parsed_data["car_id"])
+        car.delete()
+        ret = Response(SUCCESS, error_code[SUCCESS])
+    except ObjectDoesNotExist:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+    return HttpResponse(ret.serialize())
+
+@csrf_exempt
+def edit_car(request):
+    

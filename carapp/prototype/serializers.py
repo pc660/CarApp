@@ -32,4 +32,24 @@ class UserSerializer(Serializer):
             "usertype",
             "location"
         ]
+        self.instance = instance
+
+class CarSerializer(Serializer):
+    """Serialize class to serialize Car model""" 
+
+    def __init__(self, instance):
+        self.fields = [
+            "user.username",
+            "car_id",
+            "used",
+            "model",
+            "brand",
+            "location",
+            "year",
+            "price",
+            "color",
+            "title",
+            "miles",
+            "description"  
+        ]
         self.instance = instance 
