@@ -236,6 +236,3 @@ def delete_car(request):
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
     return HttpResponse(ret.serialize())
 
-@csrf_exempt
-def edit_car(request):
-    
