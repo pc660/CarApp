@@ -159,6 +159,11 @@ def add_user(request):
         ret = Response(DUPLICATE_KEY, error_code[DUPLICATE_KEY])
         return HttpResponse(ret.serialize())
     ret = Response(SUCCESS, error_code[SUCCESS])
+    # Generate a token for authentication
+    token = token_generator(30)
+    user_token = Token(token=token, username=data["username"])
+    user_token.save()
+    ret.set_ret("auth_token", token) 
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
@@ -197,6 +202,7 @@ def add_car(request):
     
     data = get_json_data(request)
     try:
+        parsed_data = json.loads(data)
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
