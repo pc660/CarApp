@@ -27,8 +27,8 @@ class Token(models.Model):
 class Car(models.Model):
     
     user = models.ForeignKey(User)
-    car_id = models.IntegerField(primary_key=True, default=uuid.uuid4)
-    used = models.BooleanField(default=1)
+    car_id = models.CharField(max_length=100, unique=True, primary_key=True, default=uuid.uuid4)
+    used = models.BooleanField(max_length=50)
     model = models.CharField(max_length=50)
     brand = models.CharField(max_length=50)
     location = models.CharField(max_length=50)

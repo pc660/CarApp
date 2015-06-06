@@ -243,3 +243,33 @@ def delete_car(request):
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
     return HttpResponse(ret.serialize())
 
+@csrf_exempt
+def edit_car(request):
+   
+    data = get_json_data(request)
+    try:
+        parsed_data = json.loads(data)
+        if not authenticate_user(parsed_data):
+            ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
+            return HttpResponse(ret.serialize())
+        car = Car.objects.get(car_id=parsed_data["car_id"])
+        car.used = parsed_data["used"]
+        car.model = parsed_data["model"]
+        car.brand = parsed_data["brand"],
+        car.location = parsed_data["location"],
+        car.year = parsed_data["year"],
+        car.price = parsed_data["price"],
+        car.color = parsed_data["color"],
+        car.title = parsed_data["title"],
+        car.miles = parsed_data["miles"],
+        car.description = parsed_data["description"] 
+        car.save()
+        car_serializer = CarSerializer(car)
+        ret = Response(SUCCESS, error_code[SUCCESS])
+        ret.set_ret("data", car_serializer.serialize())
+    except KeyError as e:
+        ret = Response(EMPTY_COLUMN, error_code[EMPTY_COLUMN])
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+    return HttpResponse(ret.serialize())
+
