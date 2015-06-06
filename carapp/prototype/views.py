@@ -201,7 +201,7 @@ def add_car(request):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
         user = User.objects.get(username=parsed_data["username"])
-        car = Car(uuser=user, 
+        car = Car(user=user, 
             used=parsed_data["used"],
             model=parsed_data["model"],
             brand=parsed_data["brand"],
