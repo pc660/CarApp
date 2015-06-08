@@ -52,4 +52,5 @@ class CarSerializer(Serializer):
             "miles",
             "description"  
         ]
-        self.instance = instance 
+        self.instance = instance
+    

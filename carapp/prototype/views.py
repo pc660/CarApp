@@ -37,6 +37,7 @@ AUTHENTICATION_FAIL = "2"
 DUPLICATE_KEY = "3"
 EMPTY_COLUMN = "4"
 NONEXIST_DATA = "5"
+OVERFLOW = "6"
 
 error_code = {
     SUCCESS: "Operation success",
@@ -44,7 +45,8 @@ error_code = {
     NONEXIST_DATA: "The requested record can not be found",
     AUTHENTICATION_FAIL: "authenticate", 
     DUPLICATE_KEY: "This username has been used",
-    EMPTY_COLUMN: "You have empty column"
+    EMPTY_COLUMN: "You have empty column",
+    OVERFLOW: "Request has exceeded current database size"
 }
 
 def get_json_data(request):
@@ -87,6 +89,8 @@ def login_require(request):
         user_token = Token(token=token, username=data["username"])
     user_token.save()
     ret.set_ret("auth_token", token) 
+    user = User.objects.get(username=data["username"])
+    ret.set_ret("data", UserSerializer(user.appuser).serialize())
     return HttpResponse(ret.serialize())
 
 def authenticate_user(data):
@@ -293,3 +297,27 @@ def test_image(request):
         {'documents': documents, 'form': form},
         context_instance=RequestContext(request)
     )
+
+@csrf_exempt
+def get_recent_cars(request):
+    
+    data = get_json_data(request)
+    try:
+        parsed_data = json.loads(data)
+        ret_list = []
+        cars = Car.objects.all()
+        sorted_cars = sorted(cars, key=lambda x: x.last_edit, reverse=True)
+        start = int(parsed_data["start"])
+        end = int(parsed_data["end"])
+        end = min(end, len(sorted_cars) - 1)
+        car_list = sorted_cars[start : end + 1]
+        ret = Response(SUCCESS, error_code[SUCCESS])
+        for car in car_list:
+            car_serial = CarSerializer(car)
+            ret_list.append(car_serial.serialize())
+        ret.set_ret("data", json.dumps(ret_list)) 
+    except IndexError as e:
+        ret = Response(OVERFLOW, error_code[OVERFLOW])
+    return HttpResponse(ret.serialize())
+
+

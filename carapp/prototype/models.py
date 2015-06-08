@@ -16,7 +16,7 @@ class AppUser(models.Model):
     user = models.OneToOneField(User)
     usertype = models.IntegerField(default=UserType.CAR_SELLER)
     location = models.CharField(max_length=50)
-          
+       
 class Token(models.Model):
     """ This is used for authentication"""
     
@@ -27,17 +27,18 @@ class Token(models.Model):
 class Car(models.Model):
     
     user = models.ForeignKey(User)
-    car_id = models.CharField(max_length=100, unique=True, primary_key=True, default=uuid.uuid4)
-    used = models.BooleanField(max_length=50)
-    model = models.CharField(max_length=50)
-    brand = models.CharField(max_length=50)
-    location = models.CharField(max_length=50)
-    year = models.IntegerField()
-    price = models.IntegerField()
-    color = models.CharField(max_length=50)
-    title = models.CharField(max_length=100)
-    miles = models.IntegerField()
-    description = models.CharField(max_length=999999, blank=True)
+    car_id = models.AutoField(primary_key=True)
+    used = models.CharField(max_length=50, default="0")
+    model = models.CharField(max_length=50, null=True)
+    brand = models.CharField(max_length=50, null=True)
+    location = models.CharField(max_length=50, null=True)
+    year = models.IntegerField(null=True)
+    price = models.IntegerField(null=True)
+    color = models.CharField(max_length=50, null=True)
+    title = models.CharField(max_length=100, null=True)
+    miles = models.IntegerField(null=True)
+    description = models.CharField(max_length=999999, null=True)
+    last_edit = models.DateTimeField(default=datetime.now)
 
 class Document(models.Model):
     docfile = models.FileField(upload_to='documents/%Y/%m/%d')
