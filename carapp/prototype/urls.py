@@ -10,5 +10,6 @@ urlpatterns = [
     url(r'^api/add_car$', views.add_car),
     url(r'^api/delete_car$', views.delete_car),
     url(r'^api/edit_car$', views.edit_car),
+    url(r'^test_image', views.test_image, name="test_image")
 ]
 

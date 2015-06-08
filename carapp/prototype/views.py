@@ -1,9 +1,12 @@
 from django.http import *
-from django.shortcuts import render
+from django.shortcuts import *
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required 
 from django.contrib.auth import *
 from django.views.decorators.csrf import *
+from django.core.urlresolvers import reverse
+
+from prototype.forms import *
 from prototype.models import *
 from prototype.serializers import *
 from datetime import datetime
@@ -273,3 +276,20 @@ def edit_car(request):
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
     return HttpResponse(ret.serialize())
 
+
+@csrf_exempt
+def test_image(request):
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            newdoc = Document(docfile = request.FILES['docfile'])
+            newdoc.save()
+            return HttpResponseRedirect(reverse('prototype.views.test_image'))
+    else:
+        form = DocumentForm()
+    documents = Document.objects.all()
+    return render_to_response(
+        'prototype/list.html',
+        {'documents': documents, 'form': form},
+        context_instance=RequestContext(request)
+    )
