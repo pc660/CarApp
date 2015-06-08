@@ -294,9 +294,33 @@ def test_image(request):
     documents = Document.objects.all()
     return render_to_response(
         'prototype/list.html',
-        {'documents': documents, 'form': form},
+        {'documents': documets, 'form': form},
         context_instance=RequestContext(request)
     )
+
+@csrf_exempt
+def get_cars(request):
+    """Get all cars from user"""
+   
+    data = get_json_data(request)
+    
+    try:
+        parsed_data = json.loads(data)
+        if not authenticate_user(parsed_data):
+            ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
+            return HttpResponse(ret.serialize())
+        ret_list = []
+        user = User.objects.get(username=parsed_data["username"])
+        cars = Car.objects.filter(user=user)
+        sorted_cars = sorted(cars, key=lambda x: x.last_edit, reverse=True)
+        ret = Response(SUCCESS, error_code[SUCCESS])
+        for car in sorted_cars:
+            car_serial = CarSerializer(car)
+            ret_list.append(car_serial.serialize())
+        ret.set_ret("data", json.dumps(ret_list)) 
+    except IndexError as e:
+        ret = Response(OVERFLOW, error_code[OVERFLOW])
+    return HttpResponse(ret.serialize())
 
 @csrf_exempt
 def get_recent_cars(request):
