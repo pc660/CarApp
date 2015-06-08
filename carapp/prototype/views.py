@@ -29,7 +29,10 @@ class Response:
         self.ret[key] = value
 
     def serialize(self):
-        return json.dumps(self.ret)
+        # Remove duplicate / before "
+        cur_str = json.dumps(self.ret)
+        return cur_str 
+
 
 SUCCESS = "0"
 UNKNOWN_OPERATION = "1"
@@ -39,6 +42,7 @@ EMPTY_COLUMN = "4"
 NONEXIST_DATA = "5"
 OVERFLOW = "6"
 
+# description of error codes 
 error_code = {
     SUCCESS: "Operation success",
     UNKNOWN_OPERATION: "Unknown operation",
@@ -317,7 +321,7 @@ def get_cars(request):
         for car in sorted_cars:
             car_serial = CarSerializer(car)
             ret_list.append(car_serial.serialize())
-        ret.set_ret("data", json.dumps(ret_list)) 
+        ret.set_ret("data", ret_list) 
     except IndexError as e:
         ret = Response(OVERFLOW, error_code[OVERFLOW])
     return HttpResponse(ret.serialize())
@@ -339,7 +343,7 @@ def get_recent_cars(request):
         for car in car_list:
             car_serial = CarSerializer(car)
             ret_list.append(car_serial.serialize())
-        ret.set_ret("data", json.dumps(ret_list)) 
+        ret.set_ret("data", ret_list) 
     except IndexError as e:
         ret = Response(OVERFLOW, error_code[OVERFLOW])
     return HttpResponse(ret.serialize())
