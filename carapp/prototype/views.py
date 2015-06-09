@@ -34,6 +34,7 @@ class Response:
         return cur_str 
 
 
+"""Error codes that are returned by APIs"""
 SUCCESS = "0"
 UNKNOWN_OPERATION = "1"
 AUTHENTICATION_FAIL = "2" 
@@ -54,6 +55,8 @@ error_code = {
 }
 
 def get_json_data(request):
+    """get data from request"""
+
     if request.method == "GET":
         return request.GET["data"]
     else:
@@ -70,8 +73,29 @@ def token_generator(length):
     return "".join(s) 
 
 # Create your views here.
+"""All apis will receive a json object and return a json object,
+Input format:
+data = 
+{
+    arg1 = value1,
+    arg2 = value2,
+    ...
+}
+output format:
+{
+    status: error_code,
+    reason: error_description,
+    data: json_data
+}
+"""
+
+
 @csrf_exempt
 def login_require(request):
+    """Login api.
+    Require username and password.
+    return {stats, error_code, data(user info), auth_token}"""
+
     if request.method == "GET":
         data = request.GET
     else:
@@ -114,14 +138,15 @@ def authenticate_user(data):
 @csrf_exempt
 def get_user(request):
     """User api, receive a json object
+    data = 
     {
         "username": chaopan@gmail.com,
         "last_name": chao,
         "first_name": pan,
         .....
     }
-    return a json object which is the userprofile object"""
-    
+    return {status, error_code, data(user_info)}
+    """ 
     data = get_json_data(request) 
     try:
         parsed_data = json.loads(data) 
@@ -138,13 +163,14 @@ def get_user(request):
 @csrf_exempt
 def add_user(request): 
     """User api, receive a json object
+    data = 
     {
         "username": chaopan@gmail.com,
         "last_name": chao,
         "first_name": pan,
         .....
     }
-    return a json object which is the userprofile object"""
+    return {status, error_code, data(user_info)}"""
  
     data = get_json_data(request)
     try:
@@ -182,7 +208,17 @@ def add_user(request):
 @csrf_exempt
 def edit_userprofile(request):
     """edit an user profile.
-    This function needs to be authenticated"""
+    This function needs to be authenticated.
+    receive a json object
+    data = 
+    {
+        "username": chaopan@gmail.com,
+        "last_name": chao,
+        "first_name": pan,
+        .....
+    }
+    update the user profile according to the input.
+    return {status, error_code, data(user_info)}"""
    
     data = get_json_data(request)
     try:
@@ -210,7 +246,18 @@ def edit_userprofile(request):
 
 @csrf_exempt
 def add_car(request):
-    """rest api to add car, login_required"""
+    """api to add car
+    This function needs to be authenticated
+    data = 
+    {
+        "username": chaopan@gmail.com,
+        "used": 0,
+        "model": "audi",
+        .....
+    }
+    add a car into user with username=username
+    return {status, error_code, data(car_info)}
+    """
     
     data = get_json_data(request)
     try:
@@ -243,7 +290,15 @@ def add_car(request):
 
 @csrf_exempt
 def delete_car(request):
-   
+    """Delete the car with the car_id
+    receive a json object
+    data = 
+    {
+        car_id = "1"
+    }
+    return {status, error_code}
+    """  
+ 
     data = get_json_data(request)
     try:
         parsed_data = json.loads(data)
@@ -256,7 +311,18 @@ def delete_car(request):
 
 @csrf_exempt
 def edit_car(request):
-   
+    """Edit the car info given car_id
+    receive a json object
+    data = 
+    {
+        car_id = "1",
+        used = "2",
+        model = "3",
+        .....
+    }
+    return {status, error_code, data(car_info)}
+    """  
+ 
     data = get_json_data(request)
     try:
         parsed_data = json.loads(data)
@@ -288,23 +354,32 @@ def edit_car(request):
 @csrf_exempt
 def test_image(request):
     if request.method == 'POST':
-        form = DocumentForm(request.POST, request.FILES)
-        if form.is_valid():
-            newdoc = Document(docfile = request.FILES['docfile'])
-            newdoc.save()
-            return HttpResponseRedirect(reverse('prototype.views.test_image'))
+        #form = DocumentForm(request.POST, request.FILES)
+        #if form.is_valid():
+        #    newdoc = Document(docfile = request.FILES['docfile'])
+        #    newdoc.save()
+        #    return HttpResponseRedirect(reverse('prototype.views.test_image'))
+        print str(request)
+        return HttpResponse(str(request.FILES))
     else:
         form = DocumentForm()
     documents = Document.objects.all()
     return render_to_response(
         'prototype/list.html',
-        {'documents': documets, 'form': form},
+        {'documents': documents, 'form': form},
         context_instance=RequestContext(request)
     )
 
 @csrf_exempt
 def get_cars(request):
-    """Get all cars from user"""
+    """Get all cars from user
+    receive a json object
+    data = 
+    {
+       username = "username" 
+    }
+    return {status, error_code, data([car1_info, car2_info, ...])}
+    """
    
     data = get_json_data(request)
     
@@ -328,7 +403,16 @@ def get_cars(request):
 
 @csrf_exempt
 def get_recent_cars(request):
-    
+    """Get the most recent posted cars
+    receive a json object
+    data = 
+    {
+        start = 1, 
+        end = 2
+    }
+    return {status, error_code, data(sorted_cars[start:end])}
+    """   
+ 
     data = get_json_data(request)
     try:
         parsed_data = json.loads(data)
