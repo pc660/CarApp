@@ -267,6 +267,7 @@ def add_car(request):
             return HttpResponse(ret.serialize())
         user = User.objects.get(username=parsed_data["username"])
         car = Car(user=user, 
+            vin=parsed_data["vin"],
             used=parsed_data["used"],
             model=parsed_data["model"],
             brand=parsed_data["brand"],
@@ -354,12 +355,10 @@ def edit_car(request):
 @csrf_exempt
 def test_image(request):
     if request.method == 'POST':
-        #form = DocumentForm(request.POST, request.FILES)
-        #if form.is_valid():
-        #    newdoc = Document(docfile = request.FILES['docfile'])
-        #    newdoc.save()
-        #    return HttpResponseRedirect(reverse('prototype.views.test_image'))
-        print str(request)
+        import pdb
+        pdb.set_trace()
+        newdoc = Document(docfile = request.FILES['userfile'])
+        newdoc.save()
         return HttpResponse(str(request.FILES))
     else:
         form = DocumentForm()
@@ -400,6 +399,39 @@ def get_cars(request):
     except IndexError as e:
         ret = Response(OVERFLOW, error_code[OVERFLOW])
     return HttpResponse(ret.serialize())
+
+@csrf_exempt
+def search_car_by_brand_model(request):
+    
+    data = get_json_data(request)
+    try:
+        parsed_data = json.loads(data)
+        brand = parsed_data["brand"]
+        model = parsed_data["model"]
+       
+        set1 = None
+        set2 = None 
+        if brand:
+            set1 = set(Car.objects.filter(brand=brand))
+        if model:
+            set2 = set(Car.objects.filter(model=model))
+        if set1 and set2:
+            ret_set = set1 & set2
+        elif set1:
+            ret_set = set1
+        else:
+            ret_set = set2
+        ret = Response(SUCCESS, error_code[SUCCESS])
+        ret_list = []
+        car_list = list(ret_set)
+        for car in car_list:
+            car_serial = CarSerializer(car)
+            ret_list.append(car_serial.serialize())
+        ret.set_ret("data", ret_list) 
+    except IndexError as e:
+        ret = Response(OVERFLOW, error_code[OVERFLOW])
+    return HttpResponse(ret.serialize())
+
 
 @csrf_exempt
 def get_recent_cars(request):

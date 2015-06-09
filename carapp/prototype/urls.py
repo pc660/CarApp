@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^api/edit_car$', views.edit_car),
     url(r'^api/get_cars$', views.get_cars),
     url(r'^api/get_recent_cars', views.get_recent_cars),
+    url(r'^api/search_cars', views.search_car_by_brand_model),
     url(r'^test_image', views.test_image, name="test_image")
 ]
 

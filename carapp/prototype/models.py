@@ -28,6 +28,7 @@ class Car(models.Model):
     
     user = models.ForeignKey(User)
     car_id = models.AutoField(primary_key=True)
+    vin = models.CharField(max_length=50, null=True)
     used = models.CharField(max_length=50, default="0")
     model = models.CharField(max_length=50, null=True)
     brand = models.CharField(max_length=50, null=True)

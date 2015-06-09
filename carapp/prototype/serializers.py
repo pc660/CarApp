@@ -41,6 +41,7 @@ class CarSerializer(Serializer):
         self.fields = [
             "user.username",
             "car_id",
+            "vin",
             "used",
             "model",
             "brand",
