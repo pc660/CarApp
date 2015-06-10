@@ -179,13 +179,17 @@ def add_user(request):
             username=parsed_data["username"],
             last_name=parsed_data["last_name"],
             first_name=parsed_data["first_name"],
-            email=parsed_data["email"])
+        )
         user.set_password(parsed_data["password"])
         user.save()
         appuser = AppUser.objects.create(
             user=user,
             usertype=parsed_data["usertype"],
-            location=parsed_data["location"])
+            phone=parsed_data["phone"],
+            state=parsed_data["state"],
+            city=parsed_data["city"],
+            address=parsed_data["address"]
+        )
         appuser.save()
         # Generate response
         ret = Response(SUCCESS, error_code[SUCCESS])
@@ -228,7 +232,10 @@ def edit_userprofile(request):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
         user = User.objects.get(username=parsed_data["username"]) 
-        user.appuser.location = parsed_data["location"]
+        user.appuser.phone = parsed_data["phne"],
+        user.appuser.state = parsed_data["state"],
+        user.appuser.city = parsed_data["city"],
+        user.appuser.address = parsed_data["address"],
         user.appuser.usertype = parsed_data["usertype"]
         user.last_name = parsed_data["last_name"]
         user.first_name = parsed_data["first_name"]
@@ -266,9 +273,12 @@ def add_car(request):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
         user = User.objects.get(username=parsed_data["username"])
+        tags = parsed_data["tags"].split(",")
+        tag_list = [False for i in range(8)]  
+        for i in tags:
+            tag_list[int(i)] = True
         car = Car(user=user, 
             vin=parsed_data["vin"],
-            used=parsed_data["used"],
             model=parsed_data["model"],
             brand=parsed_data["brand"],
             location=parsed_data["location"],
@@ -277,7 +287,17 @@ def add_car(request):
             color=parsed_data["color"],
             title=parsed_data["title"],
             miles=parsed_data["miles"],
+            state=parsed_data["state"],
+            city=parsed_data["city"],
             description=parsed_data["description"] 
+            tag0=tag_list[0],
+            tag1=tag_list[1],
+            tag2=tag_list[2],
+            tag3=tag_list[3],
+            tag4=tag_list[4],
+            tag5=tag_list[5],
+            tag6=tag_list[6],
+            tag7=tag_list[7]
         )
         car.save()
         car_serializer = CarSerializer(car)
@@ -331,7 +351,7 @@ def edit_car(request):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
         car = Car.objects.get(car_id=parsed_data["car_id"])
-        car.used = parsed_data["used"]
+        car.vin = parsed_data["vin"],
         car.model = parsed_data["model"]
         car.brand = parsed_data["brand"],
         car.location = parsed_data["location"],
@@ -340,7 +360,22 @@ def edit_car(request):
         car.color = parsed_data["color"],
         car.title = parsed_data["title"],
         car.miles = parsed_data["miles"],
+        car.state = parsed_data["state"],
+        car.city = parsed_data["city"],
         car.description = parsed_data["description"] 
+        tags = parsed_data["tags"].split(",")
+        tag_list = [False for i in range(8)]  
+        for i in tags:
+            tag_list[int(i)] = True
+        car.tag0 = tag_list[0],
+        car.tag1 = tag_list[1],
+        car.tag2 = tag_list[2],
+        car.tag3 = tag_list[3],
+        car.tag4 = tag_list[4],
+        car.tag5 = tag_list[5],
+        car.tag6 = tag_list[6],
+        car.tag7 = tag_list[7]
+          
         car.save()
         car_serializer = CarSerializer(car)
         ret = Response(SUCCESS, error_code[SUCCESS])

@@ -15,8 +15,12 @@ class AppUser(models.Model):
 
     user = models.OneToOneField(User)
     usertype = models.IntegerField(default=UserType.CAR_SELLER)
-    location = models.CharField(max_length=50)
+    state = models.CharField(max_length=50, null=True)
+    city = models.CharField(max_length=50, null=True)
+    address = models.CharField(max_length=50, null=True)
+    phone = models.CharField(max_length=10)
        
+ 
 class Token(models.Model):
     """ This is used for authentication"""
     
@@ -29,10 +33,10 @@ class Car(models.Model):
     user = models.ForeignKey(User)
     car_id = models.AutoField(primary_key=True)
     vin = models.CharField(max_length=50, null=True)
-    used = models.CharField(max_length=50, default="0")
     model = models.CharField(max_length=50, null=True)
     brand = models.CharField(max_length=50, null=True)
-    location = models.CharField(max_length=50, null=True)
+    state = models.CharField(max_length=50, null=True)
+    city = models.CharField(max_length=50, null=True)
     year = models.IntegerField(null=True)
     price = models.IntegerField(null=True)
     color = models.CharField(max_length=50, null=True)
@@ -40,7 +44,15 @@ class Car(models.Model):
     miles = models.IntegerField(null=True)
     description = models.CharField(max_length=999999, null=True)
     last_edit = models.DateTimeField(default=datetime.now)
-
+    tag0 = models.BooleanField(default=False)
+    tag1 = models.BooleanField(default=False)
+    tag2 = models.BooleanField(default=False)
+    tag3 = models.BooleanField(default=False)
+    tag4 = models.BooleanField(default=False)
+    tag5 = models.BooleanField(default=False)
+    tag6 = models.BooleanField(default=False)
+    tag7 = models.BooleanField(default=False)
+    
 class Document(models.Model):
     docfile = models.FileField(upload_to='documents/%Y/%m/%d')
 
