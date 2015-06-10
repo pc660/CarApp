@@ -424,7 +424,12 @@ def search_car_by_brand_model(request):
         ret = Response(SUCCESS, error_code[SUCCESS])
         ret_list = []
         car_list = list(ret_set)
-        for car in car_list:
+        start = int(parsed_data["start"])
+        end = int(parsed_data["end"])
+        end = min(end, len(car_list) - 1)
+        car_list = car_list[start : end + 1]
+        sorted_cars = sorted(car_list, key=lambda x: x.last_edit, reverse=True)
+        for car in sorted_cars:
             car_serial = CarSerializer(car)
             ret_list.append(car_serial.serialize())
         ret.set_ret("data", ret_list) 
