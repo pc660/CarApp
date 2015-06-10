@@ -30,7 +30,9 @@ class UserSerializer(Serializer):
             "user.last_name",
             "user.first_name",
             "usertype",
-            "location"
+            "state",
+            "city",
+            "address"
         ]
         self.instance = instance
 
@@ -42,16 +44,24 @@ class CarSerializer(Serializer):
             "user.username",
             "car_id",
             "vin",
-            "used",
             "model",
             "brand",
-            "location",
+            "state",
+            "city",
             "year",
             "price",
             "color",
             "title",
             "miles",
-            "description"  
+            "description",  
+            "tag0",
+            "tag1",
+            "tag2",
+            "tag3",
+            "tag4",
+            "tag5",
+            "tag6",
+            "tag7"
         ]
         self.instance = instance
     
