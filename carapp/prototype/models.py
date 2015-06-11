@@ -44,7 +44,6 @@ class Car(models.Model):
     miles = models.IntegerField(null=True)
     description = models.CharField(max_length=999999, null=True)
     last_edit = models.DateTimeField(default=datetime.now)
-    image_url = 
     tag0 = models.BooleanField(default=False)
     tag1 = models.BooleanField(default=False)
     tag2 = models.BooleanField(default=False)
