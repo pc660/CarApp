@@ -6,6 +6,9 @@ from django.contrib.auth import *
 from django.views.decorators.csrf import *
 from django.core.urlresolvers import reverse
 
+
+from django.conf import settings
+from PIL import Image
 from prototype.forms import *
 from prototype.models import *
 from prototype.serializers import *
@@ -13,6 +16,7 @@ from datetime import datetime
 from django.db.models.base import ObjectDoesNotExist
 import random
 import json
+import os
 from views import *
 
 TOKEN_LENGTH = 20
@@ -32,6 +36,10 @@ class Response:
         # Remove duplicate / before "
         cur_str = json.dumps(self.ret)
         return cur_str 
+
+# Index image size
+WIDTH = 50
+HEIGHT = 50
 
 
 """Error codes that are returned by APIs"""
@@ -238,6 +246,57 @@ def edit_userprofile(request):
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
         return HttpResponse(ret.serialize())
     ret = Response(SUCCESS, error_code[SUCCESS])
+    return HttpResponse(ret.serialize()) 
+
+@csrf_exempt
+def add_car_image(request):
+    """Api to add images to the car"""
+
+    data = get_json_data(request)
+    try:
+        parsed_data = json.loads(data)
+        car_id = parsed_data["car_id"]
+        car = Car.objects.get(car_id=car_id)
+        # First store the image
+        carimage = CarImage(mainimage=request.FILES["image"], car=car)
+        carimage.save()
+        ret = Response(SUCCESS, error_code[SUCCESS])
+    # need to improve
+    except:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+    return HttpResponse(ret.serialize()) 
+
+@csrf_exempt
+def add_car_index_image(request):
+    """Api to add the introduction image to the car"""
+
+    data = get_json_data(request)
+    try:
+        parsed_data = json.loads(data)
+        car_id = parsed_data["car_id"]
+        car = Car.objects.get(car_id=car_id)
+        # First store the image
+        carimage = CarImage(mainimage=request.FILES["image"], car=car)
+        carimage.save()
+        # Next store an index image
+        # check img format
+        ext = carimage.mainimage.path.split(".")[1]
+        # resize
+        bigimage = Image.open(carimage.mainimage.path)  
+        smallimage = bigimage.resize((WIDTH, HEIGHT), Image.ANTIALIAS)  
+        root_path = os.path.join(settings.MEDIA_ROOT, "index")
+        if not os.path.exists(root_path):
+            os.mkdir(root_path)  
+        image_name = "car_{0}_index.{1}".format(car_id, ext)
+        image_path = os.path.join(root_path, image_name)
+        smallimage.save(image_path)
+        # update car
+        car.image_url = os.path.join("/media/index/", image_name)
+        car.save()
+        ret = Response(SUCCESS, error_code[SUCCESS])
+    # need to improve
+    except:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt

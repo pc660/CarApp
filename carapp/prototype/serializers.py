@@ -27,8 +27,6 @@ class UserSerializer(Serializer):
     def __init__(self, instance):
         self.fields = [
             "user.username",
-            "user.last_name",
-            "user.first_name",
             "usertype",
             "state",
             "city",
@@ -54,6 +52,7 @@ class CarSerializer(Serializer):
             "title",
             "miles",
             "description",  
+            "image_url",
             "tag0",
             "tag1",
             "tag2",
