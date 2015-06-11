@@ -44,6 +44,7 @@ class Car(models.Model):
     miles = models.IntegerField(null=True)
     description = models.CharField(max_length=999999, null=True)
     last_edit = models.DateTimeField(default=datetime.now)
+    image_url = 
     tag0 = models.BooleanField(default=False)
     tag1 = models.BooleanField(default=False)
     tag2 = models.BooleanField(default=False)
@@ -58,9 +59,8 @@ class Document(models.Model):
 
 class ImageModel(models.Model):
     
-    #mainimage = models.ImageField(upload_to='img', null = True)
-    mainimage = models.FileField(upload_to='documents/%Y/%m/%d')
-    #image = models.ForeignKey(Car)
+    mainimage = models.FileField(upload_to='imgs')
+    car = models.ForeignKey(Car)
 
 class logging(models.Model):
     """ This class is used to record all user operations,

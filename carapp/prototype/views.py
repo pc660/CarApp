@@ -141,8 +141,6 @@ def get_user(request):
     data = 
     {
         "username": chaopan@gmail.com,
-        "last_name": chao,
-        "first_name": pan,
         .....
     }
     return {status, error_code, data(user_info)}
@@ -166,8 +164,6 @@ def add_user(request):
     data = 
     {
         "username": chaopan@gmail.com,
-        "last_name": chao,
-        "first_name": pan,
         .....
     }
     return {status, error_code, data(user_info)}"""
@@ -177,8 +173,6 @@ def add_user(request):
         parsed_data = json.loads(data) 
         user = User(
             username=parsed_data["username"],
-            last_name=parsed_data["last_name"],
-            first_name=parsed_data["first_name"],
         )
         user.set_password(parsed_data["password"])
         user.save()
@@ -217,8 +211,6 @@ def edit_userprofile(request):
     data = 
     {
         "username": chaopan@gmail.com,
-        "last_name": chao,
-        "first_name": pan,
         .....
     }
     update the user profile according to the input.
@@ -237,9 +229,6 @@ def edit_userprofile(request):
         user.appuser.city = parsed_data["city"],
         user.appuser.address = parsed_data["address"],
         user.appuser.usertype = parsed_data["usertype"]
-        user.last_name = parsed_data["last_name"]
-        user.first_name = parsed_data["first_name"]
-        user.email = parsed_data["email"]
         user.save()
         user.appuser.save()
     except KeyError as e:
@@ -390,9 +379,7 @@ def edit_car(request):
 @csrf_exempt
 def test_image(request):
     if request.method == 'POST':
-        import pdb
-        pdb.set_trace()
-        newdoc = Document(docfile = request.FILES['userfile'])
+        newdoc = Document(docfile = request.FILES['imageFormKey'])
         newdoc.save()
         return HttpResponse(str(request.FILES))
     else:
