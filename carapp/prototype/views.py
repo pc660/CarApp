@@ -452,22 +452,6 @@ def edit_car(request):
         ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR]) 
     return HttpResponse(ret.serialize())
 
-
-@csrf_exempt
-def test_image(request):
-    if request.method == 'POST':
-        newdoc = Document(docfile = request.FILES['imageFormKey'])
-        newdoc.save()
-        return HttpResponse(str(request.FILES))
-    else:
-        form = DocumentForm()
-    documents = Document.objects.all()
-    return render_to_response(
-        'prototype/list.html',
-        {'documents': documents, 'form': form},
-        context_instance=RequestContext(request)
-    )
-
 @csrf_exempt
 def get_cars(request):
     """Get all cars from user
