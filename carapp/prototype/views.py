@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import *
 from django.views.decorators.csrf import *
 from django.core.urlresolvers import reverse
-
+from django.db import *
 
 from django.conf import settings
 from PIL import Image
@@ -44,31 +44,33 @@ HEIGHT = 50
 
 """Error codes that are returned by APIs"""
 SUCCESS = "0"
-UNKNOWN_OPERATION = "1"
+UNKNOWN_ERROR = "1"
 AUTHENTICATION_FAIL = "2" 
 DUPLICATE_KEY = "3"
 EMPTY_COLUMN = "4"
 NONEXIST_DATA = "5"
 OVERFLOW = "6"
+INPUT_FORMAT = "7"
 
 # description of error codes 
 error_code = {
     SUCCESS: "Operation success",
-    UNKNOWN_OPERATION: "Unknown operation",
-    NONEXIST_DATA: "The requested record can not be found",
+    UNKNOWN_ERROR: "Unknown Error",
+    NONEXIST_DATA: "The requested record can not be found. Detail: {0}",
     AUTHENTICATION_FAIL: "authenticate", 
-    DUPLICATE_KEY: "This username has been used",
-    EMPTY_COLUMN: "You have empty column",
-    OVERFLOW: "Request has exceeded current database size"
+    DUPLICATE_KEY: "Primary key already exists. {0} ",
+    EMPTY_COLUMN: "You have empty column {0}",
+    OVERFLOW: "Request has exceeded current database size",
+    INPUT_FORMAT: "Input should be a json object. HttpBody should contain data attribute"
 }
 
 def get_json_data(request):
     """get data from request"""
 
     if request.method == "GET":
-        return request.GET["data"]
+        return json.loads(request.GET["data"])
     else:
-        return request.POST["data"]
+        return json.loads(request.POST["data"])
 
 def token_generator(length):
     """Generate a token with random letters with length"""
@@ -153,17 +155,18 @@ def get_user(request):
     }
     return {status, error_code, data(user_info)}
     """ 
-    data = get_json_data(request) 
     try:
-        parsed_data = json.loads(data) 
+        parsed_data = get_json_data(request) 
         user = User.objects.get(username=parsed_data["username"])
         user_serializer = UserSerializer(user.appuser)
         ret = Response(SUCCESS, error_code[SUCCESS])
         ret.set_ret("data", user_serializer.serialize())        
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message)) 
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
     except:
-        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA]) 
-        ret.set_ret("data", parsed_data)  
-        return HttpResponse(ret.serialize())
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
@@ -176,9 +179,8 @@ def add_user(request):
     }
     return {status, error_code, data(user_info)}"""
  
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data) 
+        parsed_data = get_json_data(request)
         user = User(
             username=parsed_data["username"],
         )
@@ -204,11 +206,14 @@ def add_user(request):
         user_token.save()
         ret.set_ret("auth_token", token)
     except KeyError as e:
-        ret = Response(EMPTY_COLUMN, error_code[EMPEY_COLUMN]) 
+        ret = Response(EMPTY_COLUMN, error_code[EMPTY_COLUMN].format(e.message)) 
         return HttpResponse(ret.serialize())
+    except IntegrityError as e:
+        ret = Response(DUPLICATE_KEY, error_code[DUPLICATE_KEY].format(e.message))
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
     except:
-        ret = Response(DUPLICATE_KEY, error_code[DUPLICATE_KEY])
-        return HttpResponse(ret.serialize())
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
@@ -224,9 +229,8 @@ def edit_userprofile(request):
     update the user profile according to the input.
     return {status, error_code, data(user_info)}"""
    
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data) 
+        parsed_data = get_json_data(data) 
         # authentication
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
@@ -239,40 +243,43 @@ def edit_userprofile(request):
         user.appuser.usertype = parsed_data["usertype"]
         user.save()
         user.appuser.save()
+        ret = Response(SUCCESS, error_code[SUCCESS])
     except KeyError as e:
-        ret = Response(EMPTY_COLUMN, error_code[EMPEY_COLUMN]) 
-        return HttpResponse(ret.serialize())
-    except Exception as e:
-        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
-        return HttpResponse(ret.serialize())
-    ret = Response(SUCCESS, error_code[SUCCESS])
+        ret = Response(EMPTY_COLUMN, error_code[EMPTY_COLUMN].format(e.message)) 
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
+    except:
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
 def add_car_image(request):
     """Api to add images to the car"""
 
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data)
+        parsed_data = get_json_data(data)
         car_id = parsed_data["car_id"]
         car = Car.objects.get(car_id=car_id)
         # First store the image
         carimage = CarImage(mainimage=request.FILES["image"], car=car)
         carimage.save()
         ret = Response(SUCCESS, error_code[SUCCESS])
-    # need to improve
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
     except:
-        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
 def add_car_index_image(request):
     """Api to add the introduction image to the car"""
 
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data)
+        parsed_data = get_json_data(data)
         car_id = parsed_data["car_id"]
         car = Car.objects.get(car_id=car_id)
         # First store the image
@@ -295,8 +302,12 @@ def add_car_index_image(request):
         car.save()
         ret = Response(SUCCESS, error_code[SUCCESS])
     # need to improve
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
     except:
-        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
@@ -314,9 +325,8 @@ def add_car(request):
     return {status, error_code, data(car_info)}
     """
     
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data)
+        parsed_data = get_json_data(data)
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
@@ -351,9 +361,13 @@ def add_car(request):
         ret = Response(SUCCESS, error_code[SUCCESS])
         ret.set_ret("data", car_serializer.serialize())
     except KeyError as e:
-        ret = Response(EMPTY_COLUMN, error_code[EMPTY_COLUMN])
+        ret = Response(EMPTY_COLUMN, error_code[EMPTY_COLUMN].format(e.message))
     except ObjectDoesNotExist as e:
-        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
+    except:
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize())
 
 @csrf_exempt
@@ -367,14 +381,15 @@ def delete_car(request):
     return {status, error_code}
     """  
  
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data)
+        parsed_data = get_json_data(data)
         car = Car.objects.get(car_id=parsed_data["car_id"])
         car.delete()
         ret = Response(SUCCESS, error_code[SUCCESS])
-    except ObjectDoesNotExist:
-        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
     return HttpResponse(ret.serialize())
 
 @csrf_exempt
@@ -391,9 +406,8 @@ def edit_car(request):
     return {status, error_code, data(car_info)}
     """  
  
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data)
+        parsed_data = get_json_data(data)
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
@@ -429,9 +443,13 @@ def edit_car(request):
         ret = Response(SUCCESS, error_code[SUCCESS])
         ret.set_ret("data", car_serializer.serialize())
     except KeyError as e:
-        ret = Response(EMPTY_COLUMN, error_code[EMPTY_COLUMN])
+        ret = Response(EMPTY_COLUMN, error_code[EMPTY_COLUMN].format(e.message))
     except ObjectDoesNotExist as e:
-        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA])
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
+    except:
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR]) 
     return HttpResponse(ret.serialize())
 
 
@@ -461,10 +479,8 @@ def get_cars(request):
     return {status, error_code, data([car1_info, car2_info, ...])}
     """
    
-    data = get_json_data(request)
-    
     try:
-        parsed_data = json.loads(data)
+        parsed_data = get_json_data(data)
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
@@ -479,14 +495,17 @@ def get_cars(request):
         ret.set_ret("data", ret_list) 
     except IndexError as e:
         ret = Response(OVERFLOW, error_code[OVERFLOW])
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
+    except:
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize())
 
 @csrf_exempt
 def search_car_by_brand_model(request):
     
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data)
+        parsed_data = get_json_data(data)
         brand = parsed_data["brand"]
         model = parsed_data["model"]
        
@@ -516,6 +535,10 @@ def search_car_by_brand_model(request):
         ret.set_ret("data", ret_list) 
     except IndexError as e:
         ret = Response(OVERFLOW, error_code[OVERFLOW])
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
+    except:
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize())
 
 
@@ -531,9 +554,8 @@ def get_recent_cars(request):
     return {status, error_code, data(sorted_cars[start:end])}
     """   
  
-    data = get_json_data(request)
     try:
-        parsed_data = json.loads(data)
+        parsed_data = get_json_data(data)
         ret_list = []
         cars = Car.objects.all()
         sorted_cars = sorted(cars, key=lambda x: x.last_edit, reverse=True)
@@ -548,6 +570,10 @@ def get_recent_cars(request):
         ret.set_ret("data", ret_list) 
     except IndexError as e:
         ret = Response(OVERFLOW, error_code[OVERFLOW])
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
+    except:
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize())
 
 
