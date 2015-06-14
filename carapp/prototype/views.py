@@ -229,7 +229,7 @@ def edit_userprofile(request):
     return {status, error_code, data(user_info)}"""
    
     try:
-        parsed_data = get_json_data(data) 
+        parsed_data = get_json_data(request) 
         # authentication
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
@@ -258,7 +258,7 @@ def add_car_image(request):
     """Api to add images to the car"""
 
     try:
-        parsed_data = get_json_data(data)
+        parsed_data = get_json_data(request)
         car_id = parsed_data["car_id"]
         car = Car.objects.get(car_id=car_id)
         # First store the image
@@ -269,7 +269,7 @@ def add_car_image(request):
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
     except ValueError as e:
         ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
-    except:
+    except Exception as e:
         ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize()) 
 
@@ -278,7 +278,7 @@ def add_car_index_image(request):
     """Api to add the introduction image to the car"""
 
     try:
-        parsed_data = get_json_data(data)
+        parsed_data = get_json_data(request)
         car_id = parsed_data["car_id"]
         car = Car.objects.get(car_id=car_id)
         # First store the image
@@ -325,7 +325,7 @@ def add_car(request):
     """
     
     try:
-        parsed_data = get_json_data(data)
+        parsed_data = get_json_data(request)
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
@@ -365,7 +365,7 @@ def add_car(request):
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
     except ValueError as e:
         ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
-    except:
+    except Exception as e:
         ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize())
 
@@ -381,7 +381,7 @@ def delete_car(request):
     """  
  
     try:
-        parsed_data = get_json_data(data)
+        parsed_data = get_json_data(request)
         car = Car.objects.get(car_id=parsed_data["car_id"])
         car.delete()
         ret = Response(SUCCESS, error_code[SUCCESS])
@@ -406,7 +406,7 @@ def edit_car(request):
     """  
  
     try:
-        parsed_data = get_json_data(data)
+        parsed_data = get_json_data(request)
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
@@ -463,7 +463,7 @@ def get_cars(request):
     """
    
     try:
-        parsed_data = get_json_data(data)
+        parsed_data = get_json_data(request)
         if not authenticate_user(parsed_data):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize())
@@ -488,7 +488,7 @@ def get_cars(request):
 def search_car_by_brand_model(request):
     
     try:
-        parsed_data = get_json_data(data)
+        parsed_data = get_json_data(request)
         brand = parsed_data["brand"]
         model = parsed_data["model"]
        
