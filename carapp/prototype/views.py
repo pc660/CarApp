@@ -9,7 +9,6 @@ from django.db import *
 
 from django.conf import settings
 from PIL import Image
-from prototype.forms import *
 from prototype.models import *
 from prototype.serializers import *
 from datetime import datetime
