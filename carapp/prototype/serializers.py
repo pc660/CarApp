@@ -39,7 +39,7 @@ class ImageSerializer(Serializer):
 
     def __init__(self, instance):
         self.fields = [
-            "mainimage.path",
+            "mainimage.url",
             "image_id",
             "car.car_id" 
         ]
