@@ -14,6 +14,8 @@ urlpatterns = [
     url(r'^api/get_recent_cars', views.get_recent_cars),
     url(r'^api/search_cars', views.search_car_by_brand_model),
     url(r'^api/add_car_index_image', views.add_car_index_image),
-    url(r'^api/add_car_image', views.add_car_image)
+    url(r'^api/add_car_image', views.add_car_image),
+    url(r'^api/delete_image', views.delete_image), 
+    url(r'^api/get_car_images', views.get_car_images),
 ]
 

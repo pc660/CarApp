@@ -54,9 +54,6 @@ class Car(models.Model):
     tag6 = models.BooleanField(default=False)
     tag7 = models.BooleanField(default=False)
     
-class Document(models.Model):
-    docfile = models.FileField(upload_to='documents/%Y/%m/%d')
-
 class CarImage(models.Model):
     
     mainimage = models.FileField(upload_to='imgs')
@@ -73,5 +70,3 @@ class logging(models.Model):
     operation = models.CharField(max_length=50)
     time = models.DateTimeField()    
     comments = models.CharField(max_length=99999)
-
-

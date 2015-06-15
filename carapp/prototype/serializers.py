@@ -34,6 +34,17 @@ class UserSerializer(Serializer):
         ]
         self.instance = instance
 
+class ImageSerializer(Serializer):
+    """Serialize clss to serialize CarImage"""
+
+    def __init__(self, instance):
+        self.fields = [
+            "mainimage.path",
+            "image_id",
+            "car.car_id" 
+        ]
+        self.instance = instance
+
 class CarSerializer(Serializer):
     """Serialize class to serialize Car model""" 
 

@@ -254,6 +254,23 @@ def edit_userprofile(request):
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
+def delete_image(request):
+    """Api to delete images"""
+    
+    try:
+        parsed_data = get_json_data(request)
+        if not authenticate_user(parsed_data):
+            ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
+            return HttpResponse(ret.serialize())
+        image = CarImage(image_id=parsed_data["image_id"])
+        image.delete()
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
+    except:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
+    return HttpResponse(ret.serialize()) 
+
+@csrf_exempt
 def add_car_image(request):
     """Api to add images to the car"""
 
@@ -300,7 +317,6 @@ def add_car_index_image(request):
         car.image_url = os.path.join("/media/index/", image_name)
         car.save()
         ret = Response(SUCCESS, error_code[SUCCESS])
-    # need to improve
     except ObjectDoesNotExist as e:
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
     except ValueError as e:
@@ -309,6 +325,27 @@ def add_car_index_image(request):
         ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize()) 
 
+@csrf_exempt
+def get_car_images(request):
+    """Api that get all images of a certain car_id"""
+       
+    try:
+        parsed_data = get_json_data(request)
+        car = Car.objects.get(car_id=parsed_data["car_id"])
+        images = CarImage.objects.filter(car=car)
+        image_path = []
+        for image in images:
+            image_path.append(ImageSerializer(image).serialize())
+        ret = Response(SUCCESS, error_code[SUCCESS])
+        ret.set_ret("data", image_path)
+    except ObjectDoesNotExist as e:
+        ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
+    except ValueError as e:
+        ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
+    except:
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
+    return HttpResponse(ret.serialize())
+ 
 @csrf_exempt
 def add_car(request):
     """api to add car
@@ -538,7 +575,7 @@ def get_recent_cars(request):
     """   
  
     try:
-        parsed_data = get_json_data(data)
+        parsed_data = get_json_data(request)
         ret_list = []
         cars = Car.objects.all()
         sorted_cars = sorted(cars, key=lambda x: x.last_edit, reverse=True)
