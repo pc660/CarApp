@@ -330,8 +330,7 @@ def add_car_index_image(request):
     except ValueError as e:
         ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
     except Exception as e:
-        return HttpResponse(e.message)
-        #ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
+        ret = Response(UNKNOWN_ERROR, error_code[UNKNOWN_ERROR])
     return HttpResponse(ret.serialize()) 
 
 @csrf_exempt
