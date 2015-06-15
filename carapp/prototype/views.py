@@ -322,7 +322,7 @@ def add_car_index_image(request):
         image_path = os.path.join(root_path, image_name)
         smallimage.save(image_path)
         # update car
-        car.image_url = os.path.join("/media/index/", image_name)
+        car.image_url = os.path.join("/index/", image_name)
         car.save()
         ret = Response(SUCCESS, error_code[SUCCESS])
     except ObjectDoesNotExist as e:
