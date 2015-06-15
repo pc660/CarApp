@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import *
 from django.views.decorators.csrf import *
 from django.core.urlresolvers import reverse
-from django.db import *
+from django.db import IntegrityError
 
 from django.conf import settings
 from PIL import Image
