@@ -276,6 +276,10 @@ def add_car_image(request):
 
     try:
         parsed_data = get_json_data(request)
+        if not authenticate_user(parsed_data):
+            ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
+            return HttpResponse(ret.serialize())
+ 
         car_id = parsed_data["car_id"]
         car = Car.objects.get(car_id=car_id)
         # First store the image
@@ -296,6 +300,10 @@ def add_car_index_image(request):
 
     try:
         parsed_data = get_json_data(request)
+        if not authenticate_user(parsed_data):
+            ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
+            return HttpResponse(ret.serialize())
+        
         car_id = parsed_data["car_id"]
         car = Car.objects.get(car_id=car_id)
         # First store the image
