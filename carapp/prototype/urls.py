@@ -17,5 +17,6 @@ urlpatterns = [
     url(r'^api/add_car_image', views.add_car_image),
     url(r'^api/delete_image', views.delete_image), 
     url(r'^api/get_car_images', views.get_car_images),
+    url(r'^api/edit_car', views.edit_car),
 ]
 
