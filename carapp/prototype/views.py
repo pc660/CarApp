@@ -477,32 +477,23 @@ def edit_car(request):
             ret = Response(AUTHENTICATION_FAIL, error_code[AUTHENTICATION_FAIL])
             return HttpResponse(ret.serialize(f))
         car = Car.objects.get(car_id=parsed_data["car_id"])
-        car.vin = parsed_data["vin"],
-        car.model = parsed_data["model"]
-        car.brand = parsed_data["brand"],
-        car.state = parsed_data["state"],
-        car.city = parsed_data["city"],
-        car.year = parsed_data["year"],
-        car.price = parsed_data["price"],
-        car.color = parsed_data["color"],
-        car.title = parsed_data["title"],
-        car.miles = parsed_data["miles"],
-        car.state = parsed_data["state"],
-        car.city = parsed_data["city"],
-        car.description = parsed_data["description"] 
-        tags = parsed_data["tags"].split(",")
-        tag_list = [False for i in range(8)]  
-        for i in tags:
-            tag_list[int(i)] = True
-        car.tag0 = tag_list[0],
-        car.tag1 = tag_list[1],
-        car.tag2 = tag_list[2],
-        car.tag3 = tag_list[3],
-        car.tag4 = tag_list[4],
-        car.tag5 = tag_list[5],
-        car.tag6 = tag_list[6],
-        car.tag7 = tag_list[7]
-          
+        for item in parsed_data:
+            if hasattr(car, item):
+                setattr(car, item, parsed_data[item])
+        if "tags" in parsed_data:
+            tags = parsed_data["tags"].split(",")
+            tag_list = [False for i in range(8)]  
+            for i in tags:
+                tag_list[int(i)] = True
+            car.tag0 = tag_list[0],
+            car.tag1 = tag_list[1],
+            car.tag2 = tag_list[2],
+            car.tag3 = tag_list[3],
+            car.tag4 = tag_list[4],
+            car.tag5 = tag_list[5],
+            car.tag6 = tag_list[6],
+            car.tag7 = tag_list[7]
+              
         car.save()
         car_serializer = CarSerializer(car)
         ret = Response(SUCCESS, error_code[SUCCESS])
