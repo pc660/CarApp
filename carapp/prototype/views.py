@@ -283,9 +283,10 @@ def delete_image(request):
             return HttpResponse(ret.serialize(f))
         image = CarImage(image_id=parsed_data["image_id"])
         image.delete()
+        ret = Response(SUCCESS, error_code[SUCCESS]) 
     except ObjectDoesNotExist as e:
         ret = Response(NONEXIST_DATA, error_code[NONEXIST_DATA].format(e.message))
-    except:
+    except Exception as e:
         ret = Response(INPUT_FORMAT, error_code[INPUT_FORMAT])
     return HttpResponse(ret.serialize(f)) 
 
