@@ -486,13 +486,13 @@ def edit_car(request):
             tag_list = [False for i in range(8)]  
             for i in tags:
                 tag_list[int(i)] = True
-            car.tag0 = tag_list[0],
-            car.tag1 = tag_list[1],
-            car.tag2 = tag_list[2],
-            car.tag3 = tag_list[3],
-            car.tag4 = tag_list[4],
-            car.tag5 = tag_list[5],
-            car.tag6 = tag_list[6],
+            car.tag0 = tag_list[0]
+            car.tag1 = tag_list[1]
+            car.tag2 = tag_list[2]
+            car.tag3 = tag_list[3]
+            car.tag4 = tag_list[4]
+            car.tag5 = tag_list[5]
+            car.tag6 = tag_list[6]
             car.tag7 = tag_list[7]
         car.last_edit = datetime.now()      
         car.save()
