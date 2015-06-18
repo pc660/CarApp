@@ -493,7 +493,7 @@ def edit_car(request):
             car.tag5 = tag_list[5],
             car.tag6 = tag_list[6],
             car.tag7 = tag_list[7]
-              
+        car.last_edit = datetime.now()      
         car.save()
         car_serializer = CarSerializer(car)
         ret = Response(SUCCESS, error_code[SUCCESS])
